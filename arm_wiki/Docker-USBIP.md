@@ -77,3 +77,12 @@ Docker Desktop runs containers in a Linux VM (WSL2), so a Windows drive letter (
 4. Edit the volume paths in `docker-compose.usbip-wsl.yml` and start it: `docker compose -f docker-compose.usbip-wsl.yml up -d`
 
 Attach before starting the container (the `devices:` mapping fails if `/dev/sr0` is missing). Prefer paths inside WSL over `C:/...` bind mounts for performance.
+
+### Returning the drive to Windows
+When you are done, stop the container and give the drive back to Windows (admin PowerShell):
+```cmd
+docker compose -f docker-compose.usbip-wsl.yml down
+usbipd detach --busid <busid>
+usbipd unbind --busid <busid>
+```
+`detach` releases it from WSL (unplugging the drive also does this). `unbind` removes the share, which is needed for Windows to use the drive normally again. Bound devices stay bound across reboots, so `unbind` is required if you don't want it shared any more. For the next ARM session, `bind` once more (if unbound) and `attach` again.
