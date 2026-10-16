@@ -1,0 +1,25 @@
+# ARM on Docker Desktop for Windows with the drive attached to WSL2 (Option C).
+# Attach first from Windows PowerShell, see arm_wiki/Docker-USBIP.md:
+#   usbipd bind --busid <busid>
+#   usbipd attach --wsl --busid <busid>
+#   wsl ls -l /dev/sr0
+services:
+  arm:
+    image: automaticrippingmachine/automatic-ripping-machine:latest
+    container_name: arm-rippers
+    restart: unless-stopped
+    privileged: true
+    ports:
+      - "8080:8080"
+    environment:
+      - ARM_UID=1000
+      - ARM_GID=1000
+      - TZ=America/New_York
+    volumes:
+      - /home/arm:/home/arm
+      - /home/arm/music:/home/arm/music
+      - /home/arm/logs:/home/arm/logs
+      - /home/arm/media:/home/arm/media
+      - /etc/arm/config:/etc/arm/config
+    devices:
+      - /dev/sr0:/dev/sr0
