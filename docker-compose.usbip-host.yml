@@ -9,12 +9,14 @@ services:
     container_name: arm-rippers
     restart: unless-stopped
     privileged: true
+    gpus: all
     ports:
-      - "8080:8080"
+      - "9015:8080"
     environment:
       - ARM_UID=1000
       - ARM_GID=1000
-      - TZ=America/New_York
+      - TZ=Europe/Berlin
+      - NVIDIA_DRIVER_CAPABILITIES=all
     volumes:
       - /home/arm:/home/arm
       - /home/arm/music:/home/arm/music
