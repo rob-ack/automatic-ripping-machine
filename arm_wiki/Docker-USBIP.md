@@ -25,3 +25,15 @@ Add them to `/etc/modules-load.d/usbip.conf` to persist. Docker Desktop / WSL ke
 - The `/dev` node is created by the host kernel; udev events may need to reach the container for automatic ripping — verify insert/eject triggers a job.
 - Reads over the network are slower; Blu-ray may be marginal.
 - If attach fails, you can instead attach on the Docker host and pass `/dev/sr0` via `devices:`.
+
+## Option A: attach on the Docker host
+Use `docker-compose.usbip-host.yml` with the stock image. On the host:
+```bash
+sudo apt install linux-tools-generic hwdata
+sudo modprobe vhci-hcd sr_mod usb-storage
+sudo usbip list -r <windows_ip>
+sudo usbip attach -r <windows_ip> -b <busid>
+ls -l /dev/sr0
+docker compose -f docker-compose.usbip-host.yml up -d
+```
+Attach before starting the container (the `devices:` mapping fails if `/dev/sr0` is missing). Re-attach after reboots or network drops, e.g. with a systemd unit.
