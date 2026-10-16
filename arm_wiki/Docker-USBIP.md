@@ -3,14 +3,15 @@
 Use an optical drive attached to another (Windows) machine with ARM running in Docker. Windows shares the drive over the network with `usbipd-win`; a Linux `usbip` client attaches it.
 
 ## 1. Choose an option
-| | Option A: attach on the Docker host | Option B: attach inside the container |
-|---|---|---|
-| Compose file | `docker-compose.usbip-host.yml` | `docker-compose.usbip.yml` |
-| Image | stock ARM image | custom image (`Dockerfile.usbip`) with `usbip` client |
-| Where `usbip attach` runs | on the Docker host, manually | in the container at start-up |
-| Notes | simplest, most reliable | convenient, fully containerised; needs privileged + `/sys` and `/dev` mounts |
+| | Option A: attach on the Docker host | Option B: attach inside the container | Option C: Docker Desktop for Windows (same PC) |
+|---|---|---|---|
+| Compose file | `docker-compose.usbip-host.yml` | `docker-compose.usbip.yml` | `docker-compose.usbip-wsl.yml` |
+| Image | stock ARM image | custom image (`Dockerfile.usbip`) with `usbip` client | stock ARM image |
+| Where the drive is | on another (Windows) machine | on another (Windows) machine | on the same Windows PC that runs Docker Desktop |
+| Where `usbip attach` runs | on the Docker host, manually | in the container at start-up | `usbipd attach --wsl` in Windows PowerShell |
+| Notes | simplest, most reliable | convenient, fully containerised; needs privileged + `/sys` and `/dev` mounts | no network involved; untested, needs a WSL2 kernel with `vhci-hcd` |
 
-Steps 2 and 3 apply to both options. Then follow Option A or Option B.
+Steps 2 and 3 apply to Options A and B. Option C has its own steps. Then follow Option A, B or C.
 
 ## 2. Windows setup (both options)
 On Windows (admin PowerShell):
@@ -57,3 +58,22 @@ Attach before starting the container (the `devices:` mapping fails if `/dev/sr0`
 - The `/dev` node is created by the host kernel; udev events may need to reach the container for automatic ripping — verify insert/eject triggers a job.
 - Reads over the network are slower; Blu-ray may be marginal.
 - If attach fails, use Option A instead.
+
+## 6. Option C: Docker Desktop for Windows, drive on the same PC
+Docker Desktop runs containers in a Linux VM (WSL2), so a Windows drive letter (e.g. `L:`) cannot be passed to a container: `devices:` needs a Linux device node and a volume mount only exposes files, not the raw drive ARM needs. Instead, share the drive from Windows into the WSL2 VM with `usbipd-win`; no network is involved. Works for USB drives only, not internal SATA drives.
+
+> Untested. Docker Desktop's WSL2 VM uses the shared WSL2 kernel, so the kernel needs `vhci-hcd`, `sr_mod` and `usb-storage`. The default WSL2 kernel may lack them and need to be replaced by a custom kernel.
+
+1. In admin PowerShell, find and bind the drive (the drive letter is irrelevant, use the BUSID):
+   ```cmd
+   usbipd list
+   usbipd bind --busid <busid>
+   ```
+2. Attach it to WSL2 (repeat after reboots or unplugging the drive):
+   ```cmd
+   usbipd attach --wsl --busid <busid>
+   ```
+3. Check that `/dev/sr0` exists in WSL: `wsl ls -l /dev/sr0`
+4. Edit the volume paths in `docker-compose.usbip-wsl.yml` and start it: `docker compose -f docker-compose.usbip-wsl.yml up -d`
+
+Attach before starting the container (the `devices:` mapping fails if `/dev/sr0` is missing). Prefer paths inside WSL over `C:/...` bind mounts for performance.
