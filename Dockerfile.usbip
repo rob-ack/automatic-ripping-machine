@@ -1,0 +1,11 @@
+# ARM image with the USB/IP client tools, for use with usbipd-win (see arm_wiki/Docker-USBIP.md)
+ARG ARM_IMAGE=automaticrippingmachine/automatic-ripping-machine:latest
+FROM ${ARM_IMAGE}
+
+RUN apt-get update && \
+    (apt-get install -y --no-install-recommends usbip hwdata || \
+     apt-get install -y --no-install-recommends linux-tools-generic hwdata) && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY ./scripts/docker/runit/usbip_attach.sh /etc/my_init.d/05_usbip_attach.sh
+RUN chmod +x /etc/my_init.d/05_usbip_attach.sh

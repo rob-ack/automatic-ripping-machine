@@ -1,0 +1,27 @@
+# ARM with a USB/IP client, for optical drives shared by usbipd-win (Option B).
+# See arm_wiki/Docker-USBIP.md. Host needs the vhci-hcd, sr_mod and usb-storage kernel modules.
+services:
+  arm:
+    build:
+      context: .
+      dockerfile: Dockerfile.usbip
+    image: arm-usbip:latest
+    container_name: arm-rippers
+    restart: unless-stopped
+    privileged: true
+    ports:
+      - "8080:8080"
+    environment:
+      - ARM_UID=1000
+      - ARM_GID=1000
+      - TZ=America/New_York
+      - USBIP_SERVER=192.168.1.50   # IP of the Windows machine
+      - USBIP_BUSID=2-1             # from `usbipd list`
+    volumes:
+      - /home/arm:/home/arm
+      - /home/arm/music:/home/arm/music
+      - /home/arm/logs:/home/arm/logs
+      - /home/arm/media:/home/arm/media
+      - /etc/arm/config:/etc/arm/config
+      - /sys:/sys
+      - /dev:/dev

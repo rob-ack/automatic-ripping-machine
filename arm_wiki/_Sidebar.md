@@ -56,6 +56,7 @@
    - [FAQ](FAQ)
    - [General Troubleshooting](General-Troubleshooting)
    - [Docker Troubleshooting](Docker-Troubleshooting)
+   - [Docker with USB/IP](Docker-USBIP)
    - [Open An Issue](https://github.com/automatic-ripping-machine/automatic-ripping-machine/issues/new/choose)
 
 
