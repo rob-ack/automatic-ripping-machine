@@ -1,4 +1,4 @@
-# ARM with a USB/IP client, for optical drives shared by usbipd-win.
+# ARM with a USB/IP client, for optical drives shared by usbipd-win (Option B).
 # See arm_wiki/Docker-USBIP.md. Host needs the vhci-hcd, sr_mod and usb-storage kernel modules.
 services:
   arm:
